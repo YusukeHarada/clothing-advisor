@@ -32,8 +32,9 @@
 要件定義完了。MVP実装（ロジック層・WeatherProvider・Firestoreデータ層・画面）は一通り完了。以下は未着手・保留中。
 
 - 実Firebaseプロジェクトの作成・接続（意図的に保留中。`.env.example`参照）
-- Firebase Authenticationの導入（`firestore.rules`は`request.auth.uid`前提だが認証自体は未実装。導入までは設定画面の保存がルールにより失敗する）
 - 気象庁APIレスポンスの実データでの構造検証（開発環境のネットワーク制約により未検証）
+
+設定画面の保存はFirebase Authenticationの匿名認証（Anonymous Auth）で有効化済み。ログインUIなしでデバイスごとにuidが自動発行される。
 
 ## ローカル開発
 
@@ -41,7 +42,7 @@
 npm install
 npm run dev          # http://localhost:3000
 npm run test         # vitest
-npm run emulators    # Firestore Emulator（別ターミナルで起動し、.env.localでNEXT_PUBLIC_USE_FIREBASE_EMULATOR=trueを設定）
+npm run emulators    # Firestore + Auth Emulator（別ターミナルで起動し、.env.localでNEXT_PUBLIC_USE_FIREBASE_EMULATOR=trueを設定）
 ```
 
 ## 補足
