@@ -12,7 +12,24 @@ function toDateString(isoDateTime: string): string {
 }
 
 /**
- * 週間予報部分（要素[1]）を7日分の天気・気温にのみ正規化する。
+ * 週間予報の最初の1日分（要素[1]）は短期予報側でカバーされるため
+ * tempsMin/tempsMaxが空文字列になる。要素[0].timeSeries[2].tempsの
+ * [翌日の最低, 翌日の最高]で補う。
+ */
+function resolveShortTermFallbackTemps(response: JmaForecastResponse): {
+  tempMin: number | null;
+  tempMax: number | null;
+} {
+  const shortTermTempArea = response[0].timeSeries[2]?.areas[0];
+  const [minRaw, maxRaw] = shortTermTempArea?.temps ?? [];
+  return {
+    tempMin: minRaw ? Number(minRaw) : null,
+    tempMax: maxRaw ? Number(maxRaw) : null,
+  };
+}
+
+/**
+ * 週間予報部分（要素[1]）を7日分の天気・気温に正規化する。
  * 風速・湿度は数値を含まないため、この時点ではnullのまま返す
  * （当日〜翌日分は正規化後に applyAmedasObservation で上書きする）。
  */
@@ -23,6 +40,7 @@ export function normalizeJmaWeeklyForecast(response: JmaForecastResponse): Norma
 
   const weatherArea = weatherSeries.areas[0];
   const tempArea = tempSeries.areas[0];
+  const shortTermFallback = resolveShortTermFallbackTemps(response);
 
   return weatherSeries.timeDefines.map((timeDefine, index) => {
     const weatherCode = weatherArea.weatherCodes?.[index] ?? "";
@@ -30,16 +48,28 @@ export function normalizeJmaWeeklyForecast(response: JmaForecastResponse): Norma
     const tempMinRaw = tempArea.tempsMin?.[index];
     const tempMaxRaw = tempArea.tempsMax?.[index];
 
+    const tempMin = tempMinRaw ? Number(tempMinRaw) : (index === 0 ? shortTermFallback.tempMin : null);
+    const tempMax = tempMaxRaw ? Number(tempMaxRaw) : (index === 0 ? shortTermFallback.tempMax : null);
+
     return {
       date: toDateString(timeDefine),
-      tempMin: tempMinRaw ? Number(tempMinRaw) : NaN,
-      tempMax: tempMaxRaw ? Number(tempMaxRaw) : NaN,
+      // フォールバックでも取得できない場合はNaNではなくnullにせず、
+      // 呼び出し側での扱いを一貫させるため0を許容しない値として明示的にthrowする
+      tempMin: assertTemp(tempMin, timeDefine, "tempMin"),
+      tempMax: assertTemp(tempMax, timeDefine, "tempMax"),
       humidity: null,
       windSpeed: null,
       isRainy,
       isSunny,
     };
   });
+}
+
+function assertTemp(value: number | null, timeDefine: string, field: string): number {
+  if (value === null || Number.isNaN(value)) {
+    throw new Error(`JMA forecast is missing ${field} for ${timeDefine}`);
+  }
+  return value;
 }
 
 /**
