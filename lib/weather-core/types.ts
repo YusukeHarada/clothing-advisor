@@ -2,8 +2,9 @@ export interface NormalizedDailyWeather {
   date: string;
   tempMax: number;
   tempMin: number;
-  humidity: number;
-  windSpeed: number;
+  /** 気象庁の週間予報は風速・湿度の数値を持たないため、2〜7日目はnullになりうる（7章参照） */
+  humidity: number | null;
+  windSpeed: number | null;
   isRainy: boolean;
   isSunny: boolean;
 }

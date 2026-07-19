@@ -5,8 +5,8 @@ import type { OutingHours } from "./types";
 export interface DailyOutfitInput {
   tempMax: number;
   tempMin: number;
-  humidity: number;
-  windSpeed: number;
+  humidity: number | null;
+  windSpeed: number | null;
   /** 外出時間帯に対応する予報気温。取得できない場合はnull（最高/最低気温で近似する） */
   outingHours?: OutingHours | null;
   outingTemp?: number | null;

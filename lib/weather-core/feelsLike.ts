@@ -4,8 +4,10 @@
  */
 export interface FeelsLikeInput {
   temp: number;
-  windSpeed: number;
-  humidity: number;
+  /** null の場合は風速補正をスキップする（気象庁週間予報の2〜7日目など、実測値が無い場合） */
+  windSpeed: number | null;
+  /** null の場合は湿度補正をスキップする */
+  humidity: number | null;
 }
 
 /**
@@ -34,7 +36,7 @@ function applyHumidity(temp: number, humidity: number): number {
 }
 
 export function computeFeelsLikeTemp({ temp, windSpeed, humidity }: FeelsLikeInput): number {
-  const afterWind = applyWindChill(temp, windSpeed);
-  const afterHumidity = applyHumidity(afterWind, humidity);
+  const afterWind = windSpeed === null ? temp : applyWindChill(temp, windSpeed);
+  const afterHumidity = humidity === null ? afterWind : applyHumidity(afterWind, humidity);
   return Math.round(afterHumidity * 10) / 10;
 }
