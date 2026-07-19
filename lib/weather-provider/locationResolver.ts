@@ -11,7 +11,7 @@ export interface LocationEntry {
   areaCode: string;
   /**
    * weatherCodes/pops等の区域内訳（areas配列）から該当地点の区域を選ぶためのarea.code。
-   * 例：茨城県(080000)は北部(080010)・南部(080020)に分かれ、守谷市を含むエリアは南部。
+   * 例：茨城県(080000)は北部(080010)・南部(080020)に分かれ、つくば市・守谷市を含むエリアは南部。
    * 未指定の場合はareas[0]にフォールバックする（未検証の地点向けの暫定挙動、要実データ確認）。
    */
   subAreaCode?: string;
@@ -24,7 +24,7 @@ export const KNOWN_LOCATIONS: LocationEntry[] = [
   { locationId: "osaka", name: "大阪", areaCode: "270000", amedasStationCode: "62078" },
   { locationId: "sapporo", name: "札幌", areaCode: "016000", amedasStationCode: "14163" },
   { locationId: "fukuoka", name: "福岡", areaCode: "400000", amedasStationCode: "82182" },
-  { locationId: "ibaraki-south", name: "茨城県（南部）", areaCode: "080000", subAreaCode: "080020", amedasStationCode: "40426" },
+  { locationId: "tsukuba", name: "つくば", areaCode: "080000", subAreaCode: "080020", amedasStationCode: "40336" },
 ];
 
 export class UnknownLocationError extends Error {

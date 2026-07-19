@@ -6,11 +6,11 @@ describe("resolveLocation", () => {
     expect(resolveLocation("tokyo").areaCode).toBe("130000");
   });
 
-  it("resolves ibaraki-south to Ibaraki's area code with the south sub-area and Ryugasaki amedas station", () => {
-    const ibarakiSouth = resolveLocation("ibaraki-south");
-    expect(ibarakiSouth.areaCode).toBe("080000");
-    expect(ibarakiSouth.subAreaCode).toBe("080020");
-    expect(ibarakiSouth.amedasStationCode).toBe("40426");
+  it("resolves tsukuba to Ibaraki's area code with the south sub-area and Tsukuba amedas station", () => {
+    const tsukuba = resolveLocation("tsukuba");
+    expect(tsukuba.areaCode).toBe("080000");
+    expect(tsukuba.subAreaCode).toBe("080020");
+    expect(tsukuba.amedasStationCode).toBe("40336");
   });
 
   it("resolves sapporo to the Ishikari/Sorachi/Shiribeshi forecast area code (016000, not the sub-area code 016010)", () => {
