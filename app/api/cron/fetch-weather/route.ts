@@ -4,7 +4,8 @@ import { KNOWN_LOCATIONS } from "../../../../lib/weather-provider/locationResolv
 import { saveWeatherHistoryDayAsAdmin } from "../../../../lib/firestore/admin/weatherHistoryRepository";
 
 /**
- * Vercel Cron Jobs（vercel.json参照）から1日数回呼ばれるスケジュール取得エンドポイント。
+ * Vercel Cron Jobs（vercel.json参照）から毎日呼ばれるスケジュール取得エンドポイント。
+ * Hobbyプランは1日1回までの制約があるため、頻度は1日1回（毎朝07:00 JST）とする。
  * 7章のとおり、取得はこの単一経路に統一し、クライアントはFirestoreを読むのみとする。
  */
 export async function GET(request: Request) {

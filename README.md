@@ -32,7 +32,7 @@
 
 要件定義完了。MVP実装（ロジック層・WeatherProvider・Firestoreデータ層・画面）は完了し、実Firebaseプロジェクト・Vercelへのデプロイも完了（`https://clothing-advisor.vercel.app`）。
 
-- 気象データ取得は`/api/cron/fetch-weather`（Vercel Cron Jobs、6時間毎）に統一し、Firebase Admin SDK経由で`weather_history`へ書き込む。書き込みはこの経路のみで、クライアントSDKからの書き込みは`firestore.rules`で拒否する
+- 気象データ取得は`/api/cron/fetch-weather`（Vercel Cron Jobs、毎日07:00 JST。Hobbyプランは1日1回までのためこの頻度）に統一し、Firebase Admin SDK経由で`weather_history`へ書き込む。書き込みはこの経路のみで、クライアントSDKからの書き込みは`firestore.rules`で拒否する
 - 「今日の服装」画面はFirestoreの実データを読み込む。まだデータが無い場合（初回デプロイ直後等）はサンプルデータにフォールバックし、その旨をバナーで表示する
 - 設定画面の保存はFirebase Authenticationの匿名認証（Anonymous Auth）で有効化済み。ログインUIなしでデバイスごとにuidが自動発行される
 - 地点は東京・大阪・札幌・福岡・茨城県（南部）に対応（`lib/weather-provider/locationResolver.ts`）
