@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyAmedasObservation, normalizeJmaWeeklyForecast } from "../jmaProvider";
 import { jmaForecastSample } from "../fixtures/jmaForecastSample";
+import { jmaForecastIbarakiSample } from "../fixtures/jmaForecastIbarakiSample";
 import type { JmaAmedasResponse } from "../jmaTypes";
 
 describe("normalizeJmaWeeklyForecast", () => {
@@ -44,6 +45,18 @@ describe("normalizeJmaWeeklyForecast", () => {
     const broken = structuredClone(jmaForecastSample);
     broken[0].timeSeries[2].areas[0].temps = [];
     expect(() => normalizeJmaWeeklyForecast(broken)).toThrow();
+  });
+
+  it("selects the sub-area matching subAreaCode/amedasStationCode instead of areas[0] (Ibaraki: 北部/080010 vs 南部/080020)", () => {
+    // subAreaCode/amedasStationCode未指定だとareas[0]（北部・水戸）が選ばれてしまう
+    const northByDefault = normalizeJmaWeeklyForecast(jmaForecastIbarakiSample);
+    expect(northByDefault[0]).toMatchObject({ tempMin: 22, tempMax: 33 }); // 水戸の短期予報フォールバック
+    expect(northByDefault[1]).toMatchObject({ tempMin: 22, tempMax: 31 }); // 水戸のweekly tempsMin/tempsMax
+
+    // 南部(080020)・龍ケ崎(40426)を明示すると南部側の値になる（守谷市はこちら）
+    const south = normalizeJmaWeeklyForecast(jmaForecastIbarakiSample, "080020", "40426");
+    expect(south[0]).toMatchObject({ tempMin: 24, tempMax: 35 }); // 龍ケ崎の短期予報フォールバック
+    expect(south[1]).toMatchObject({ tempMin: 24, tempMax: 34 }); // 龍ケ崎のweekly tempsMin/tempsMax
   });
 });
 
