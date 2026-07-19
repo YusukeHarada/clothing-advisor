@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// 6章のコレクション構成に対応するセキュリティルール。
+// - locations / clothing_levels / weather_history はマスタ・共有データとして
+//   クライアントから読み取り専用とし、書き込みはサーバ側（7章：Cloud Functions等、
+//   Admin SDK経由でルールをバイパス）のみが行う想定でクライアント書き込みは拒否する。
+// - users/{uid} 配下は本人（Firebase Authのuid）のみ読み書き可能とする。
+//   認証方式自体は未実装（家族共有は対象外機能）だが、将来の導入に備えて
+//   request.auth.uid との一致を前提としたルールをあらかじめ定義しておく。
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /clothing_levels/{level} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /weather_history/{locationId}/history/{date} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
