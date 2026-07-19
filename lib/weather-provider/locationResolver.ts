@@ -22,7 +22,7 @@ export interface LocationEntry {
 export const KNOWN_LOCATIONS: LocationEntry[] = [
   { locationId: "tokyo", name: "東京", areaCode: "130000", subAreaCode: "130010", amedasStationCode: "44132" },
   { locationId: "osaka", name: "大阪", areaCode: "270000", amedasStationCode: "62078" },
-  { locationId: "sapporo", name: "札幌", areaCode: "016010", amedasStationCode: "14163" },
+  { locationId: "sapporo", name: "札幌", areaCode: "016000", amedasStationCode: "14163" },
   { locationId: "fukuoka", name: "福岡", areaCode: "400000", amedasStationCode: "82182" },
   { locationId: "ibaraki-south", name: "茨城県（南部）", areaCode: "080000", subAreaCode: "080020", amedasStationCode: "40426" },
 ];
