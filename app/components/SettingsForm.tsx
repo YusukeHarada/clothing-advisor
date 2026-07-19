@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { UserSettingsDoc } from "../../lib/firestore/schema";
-import { saveUserSettings } from "../../lib/firestore/repositories/userSettingsRepository";
+import {
+  getUserSettings,
+  saveUserSettings,
+} from "../../lib/firestore/repositories/userSettingsRepository";
 import { KNOWN_LOCATIONS } from "../../lib/weather-provider/locationResolver";
 import type { OffsetStrength } from "../../lib/weather-core/types";
 import { useAnonymousAuth } from "../../lib/firebase/useAnonymousAuth";
@@ -22,7 +25,30 @@ const OFFSET_STRENGTH_LABEL: Record<OffsetStrength, string> = {
 export function SettingsForm({ initialSettings }: { initialSettings: UserSettingsDoc }) {
   const { uid, loading: authLoading } = useAnonymousAuth();
   const [settings, setSettings] = useState(initialSettings);
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "saving" | "saved" | "error">("idle");
+
+  // 認証が確立したら、Firestoreに保存済みの設定があれば読み込んで上書きする。
+  // 未保存（初回訪問）の場合はinitialSettings（サンプル/デフォルト値）のままにする。
+  useEffect(() => {
+    if (!uid) return;
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => {
+        if (!cancelled) setStatus("loading");
+        return getUserSettings(uid);
+      })
+      .then((saved) => {
+        if (cancelled) return;
+        if (saved) setSettings(saved);
+        setStatus("idle");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("idle");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
 
   const offsetDirectionKey = settings.offsetDirection ?? "none";
 
@@ -142,9 +168,15 @@ export function SettingsForm({ initialSettings }: { initialSettings: UserSetting
       <button
         type="submit"
         className="w-full rounded-lg bg-blue-600 p-3 text-sm font-medium text-white disabled:opacity-50"
-        disabled={status === "saving" || authLoading || !uid}
+        disabled={status === "saving" || status === "loading" || authLoading || !uid}
       >
-        {status === "saving" ? "保存中…" : authLoading ? "認証確立中…" : "保存する"}
+        {status === "saving"
+          ? "保存中…"
+          : status === "loading"
+            ? "読み込み中…"
+            : authLoading
+              ? "認証確立中…"
+              : "保存する"}
       </button>
 
       {status === "saved" && <p className="text-sm text-emerald-600">保存しました</p>}
