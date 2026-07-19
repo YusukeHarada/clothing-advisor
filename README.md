@@ -22,6 +22,7 @@
 - Next.js
 - Firebase（Firestore）
 - 外部気象API：気象庁（無料・APIキー不要・週間予報あり）
+- デプロイ先：Vercel（サーバ側スケジュール取得はVercel Cron Jobsで実装）
 
 ## ドキュメント
 
@@ -32,7 +33,7 @@
 要件定義完了。MVP実装（ロジック層・WeatherProvider・Firestoreデータ層・画面）は一通り完了。以下は未着手・保留中。
 
 - 実Firebaseプロジェクトの作成・接続（意図的に保留中。`.env.example`参照）
-- 気象庁APIレスポンスの実データでの構造検証（開発環境のネットワーク制約により未検証）
+- Vercelプロジェクトの作成・デプロイ設定（Cron Jobs含む、意図的に保留中）
 
 設定画面の保存はFirebase Authenticationの匿名認証（Anonymous Auth）で有効化済み。ログインUIなしでデバイスごとにuidが自動発行される。
 
