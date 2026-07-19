@@ -1,5 +1,6 @@
 import { type FirebaseApp, getApps, initializeApp } from "firebase/app";
 import { connectFirestoreEmulator, getFirestore, type Firestore } from "firebase/firestore";
+import { connectAuthEmulator, getAuth, type Auth } from "firebase/auth";
 
 /**
  * Firebaseプロジェクトの実設定（NEXT_PUBLIC_FIREBASE_*）は後回しとし、
@@ -19,7 +20,9 @@ const USE_EMULATOR = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
 let app: FirebaseApp;
 let db: Firestore;
-let emulatorConnected = false;
+let auth: Auth;
+let firestoreEmulatorConnected = false;
+let authEmulatorConnected = false;
 
 export function getFirebaseApp(): FirebaseApp {
   if (!app) {
@@ -31,10 +34,21 @@ export function getFirebaseApp(): FirebaseApp {
 export function getDb(): Firestore {
   if (!db) {
     db = getFirestore(getFirebaseApp());
-    if (USE_EMULATOR && !emulatorConnected) {
+    if (USE_EMULATOR && !firestoreEmulatorConnected) {
       connectFirestoreEmulator(db, "127.0.0.1", 8080);
-      emulatorConnected = true;
+      firestoreEmulatorConnected = true;
     }
   }
   return db;
+}
+
+export function getAuthInstance(): Auth {
+  if (!auth) {
+    auth = getAuth(getFirebaseApp());
+    if (USE_EMULATOR && !authEmulatorConnected) {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+      authEmulatorConnected = true;
+    }
+  }
+  return auth;
 }

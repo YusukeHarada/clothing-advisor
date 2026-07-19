@@ -5,6 +5,7 @@ import type { UserSettingsDoc } from "../../lib/firestore/schema";
 import { saveUserSettings } from "../../lib/firestore/repositories/userSettingsRepository";
 import { KNOWN_LOCATIONS } from "../../lib/weather-provider/locationResolver";
 import type { OffsetStrength } from "../../lib/weather-core/types";
+import { useAnonymousAuth } from "../../lib/firebase/useAnonymousAuth";
 
 const OFFSET_DIRECTION_LABEL = {
   none: "指定なし",
@@ -18,13 +19,8 @@ const OFFSET_STRENGTH_LABEL: Record<OffsetStrength, string> = {
   strong: "強",
 };
 
-/**
- * uidは本来Firebase Authenticationから取得する。認証は対象外機能の範囲外のため、
- * ここではローカル開発用の固定uidをプレースホルダーとして使う。
- */
-const DEV_UID = "local-dev-user";
-
 export function SettingsForm({ initialSettings }: { initialSettings: UserSettingsDoc }) {
+  const { uid, loading: authLoading } = useAnonymousAuth();
   const [settings, setSettings] = useState(initialSettings);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -32,12 +28,13 @@ export function SettingsForm({ initialSettings }: { initialSettings: UserSetting
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!uid) return;
     setStatus("saving");
     try {
       // Firestore SDKはネットワーク到達不能時に無応答のまま待ち続けることがあるため、
       // Firebaseプロジェクト・Emulator未接続の開発環境でも一定時間でUIに失敗を返す
       await Promise.race([
-        saveUserSettings(DEV_UID, settings),
+        saveUserSettings(uid, settings),
         new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 5000)),
       ]);
       setStatus("saved");
@@ -145,9 +142,9 @@ export function SettingsForm({ initialSettings }: { initialSettings: UserSetting
       <button
         type="submit"
         className="w-full rounded-lg bg-blue-600 p-3 text-sm font-medium text-white disabled:opacity-50"
-        disabled={status === "saving"}
+        disabled={status === "saving" || authLoading || !uid}
       >
-        {status === "saving" ? "保存中…" : "保存する"}
+        {status === "saving" ? "保存中…" : authLoading ? "認証確立中…" : "保存する"}
       </button>
 
       {status === "saved" && <p className="text-sm text-emerald-600">保存しました</p>}
