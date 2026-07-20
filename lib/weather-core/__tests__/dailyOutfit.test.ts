@@ -29,7 +29,7 @@ describe("computeDailyOutfit", () => {
     expect(result.primaryTier?.feelsLikeTemp).toBe(20);
   });
 
-  it("falls back to tempMin when outing temp is unavailable", () => {
+  it("falls back to the triangular estimate when outing temp is unavailable", () => {
     const result = computeDailyOutfit({
       tempMax: 22,
       tempMin: 12,
@@ -38,6 +38,8 @@ describe("computeDailyOutfit", () => {
       outingHours: { start: "06:00", end: "08:00" },
       outingTemp: null,
     });
-    expect(result.primaryTier?.feelsLikeTemp).toBe(12);
+    // 07:00は05:00〜14:00の上昇局面の途中にあたるため、tempMinより高くtempMaxより低い
+    expect(result.primaryTier?.feelsLikeTemp).toBeGreaterThan(12);
+    expect(result.primaryTier?.feelsLikeTemp).toBeLessThan(22);
   });
 });

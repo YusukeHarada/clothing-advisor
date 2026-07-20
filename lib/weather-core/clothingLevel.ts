@@ -21,16 +21,19 @@ export const DEFAULT_CLOTHING_LEVELS: ClothingLevelEntry[] = [
   { level: 8, tempMin: null, tempMax: -0.1, label: "厳寒対応（防寒強化・氷点下想定）" },
 ];
 
+/**
+ * tempMinのみを閾値として判定する（tempMaxは表示用の参考値）。
+ * 体感気温は小数を取りうるため、tempMin/tempMaxの両方で範囲判定すると
+ * 整数境界の間（例：14℃と15℃の間の14.2℃）が抜け落ちる。
+ * tempMinが最も高くfeelsLikeTemp以下であるレベルを選ぶことで、境界を隙間なく連続させる。
+ */
 export function resolveClothingLevel(
   feelsLikeTemp: number,
   levels: ClothingLevelEntry[] = DEFAULT_CLOTHING_LEVELS
 ): ClothingLevelEntry {
-  const sorted = [...levels].sort((a, b) => a.level - b.level);
-  const match = sorted.find((entry) => {
-    const aboveMin = entry.tempMin === null || feelsLikeTemp >= entry.tempMin;
-    const belowMax = entry.tempMax === null || feelsLikeTemp <= entry.tempMax;
-    return aboveMin && belowMax;
-  });
+  // tempMin降順（nullは-Infinity扱い）でソートし、順序に依存せず正しい閾値を選べるようにする
+  const sorted = [...levels].sort((a, b) => (b.tempMin ?? -Infinity) - (a.tempMin ?? -Infinity));
+  const match = sorted.find((entry) => entry.tempMin === null || feelsLikeTemp >= entry.tempMin);
   if (!match) {
     throw new Error(`No clothing level matched for feelsLikeTemp=${feelsLikeTemp}`);
   }

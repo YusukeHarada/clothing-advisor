@@ -17,4 +17,13 @@ describe("resolveClothingLevel", () => {
   ])("resolves %d℃ to level %d", (temp, expectedLevel) => {
     expect(resolveClothingLevel(temp).level).toBe(expectedLevel);
   });
+
+  it.each([
+    [14.9, 5],
+    [14.2, 5],
+    [8.5, 6],
+    [-0.1, 8],
+  ])("resolves fractional %d℃ without falling into a gap between integer boundaries", (temp, expectedLevel) => {
+    expect(resolveClothingLevel(temp).level).toBe(expectedLevel);
+  });
 });
