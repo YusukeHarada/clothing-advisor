@@ -1,5 +1,6 @@
 import { computeFeelsLikeTemp } from "./feelsLike";
 import { ClothingLevelEntry, resolveClothingLevel } from "./clothingLevel";
+import { estimateOutingTemp } from "./outingTempEstimate";
 import type { OutingHours } from "./types";
 
 export interface DailyOutfitInput {
@@ -7,8 +8,12 @@ export interface DailyOutfitInput {
   tempMin: number;
   humidity: number | null;
   windSpeed: number | null;
-  /** 外出時間帯に対応する予報気温。取得できない場合はnull（最高/最低気温で近似する） */
   outingHours?: OutingHours | null;
+  /**
+   * 外出時間帯に対応する実測/時間別予報の気温。取得できる場合のみ渡す。
+   * 気象庁の無料APIには時間別予報が無いため、未指定の場合は
+   * outingTempEstimate.tsの三角モデルでtempMax/tempMinから近似する。
+   */
   outingTemp?: number | null;
   levels?: ClothingLevelEntry[];
 }
@@ -57,8 +62,8 @@ export function computeDailyOutfit(input: DailyOutfitInput): DailyOutfitResult {
     return { tiers, primaryTier: null };
   }
 
-  // 時間別予報が取得できない場合は最高/最低気温からの近似で代替する
-  const approximatedOutingTemp = outingTemp ?? tempMin;
+  // 時間別予報が取得できない場合は三角モデルによる近似で代替する
+  const approximatedOutingTemp = outingTemp ?? estimateOutingTemp(tempMax, tempMin, outingHours);
   const primaryFeelsLike = computeFeelsLikeTemp({
     temp: approximatedOutingTemp,
     windSpeed,
